@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1027456233123",
-    "project_id": "chatmovil-9d903",
-    "storage_bucket": "chatmovil-9d903.appspot.com"
+    "project_number": "887843362894",
+    "project_id": "chatfirebase-47aa5",
+    "storage_bucket": "chatfirebase-47aa5.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1027456233123:android:b04c6250143a2c324fd916",
+        "mobilesdk_app_id": "1:887843362894:android:7748d1f3a1e7cb8a684b1f",
         "android_client_info": {
           "package_name": "com.pucmm.chatmovil"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDiO45BIdpabrnT9w3x7MHck0BqsIQfdwI"
+          "current_key": "AIzaSyCLbyeiA8A9Bdif8uqs5XXH2GWcYMWAeuM"
         }
       ],
       "services": {

@@ -18,6 +18,10 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Register extends AppCompatActivity {
 
@@ -52,41 +56,59 @@ public class Register extends AppCompatActivity {
         setup();
     }
 
-    private void setup() {
-        registerButton.setOnClickListener(view -> {
-            if (registerEmailField.getText().toString().isEmpty() || registerPasswordField.getText().toString().isEmpty() || registerNameField.getText().toString().isEmpty()) {
-                return;
-            }
 
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    registerButton.setEnabled(false);
-
-
-
-
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(registerEmailField.getText().toString(), registerPasswordField.getText().toString()).addOnCompleteListener(task -> {
-    if (task.isSuccessful()) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                .setDisplayName(registerNameField.getText().toString())
-                .build();
-            user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
-                if (profileTask.isSuccessful()) {
-                    showHome(registerEmailField.getText().toString(), registerNameField.getText().toString());
-                } else {
-                    showError(profileTask.getException().getMessage());
-                }
-            });
+private void setup() {
+    registerButton.setOnClickListener(view -> {
+        if (registerEmailField.getText().toString().isEmpty() || registerPasswordField.getText().toString().isEmpty() || registerNameField.getText().toString().isEmpty()) {
+            return;
         }
-    } else {
-        showError(task.getException().getMessage());
-    }
-    progressBar.setVisibility(View.GONE);
-    registerButton.setEnabled(true);
-});
+
+        progressBar.setVisibility(View.VISIBLE);
+        registerButton.setEnabled(false);
+
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(registerEmailField.getText().toString(), registerPasswordField.getText().toString()).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                        .setDisplayName(registerNameField.getText().toString())
+                        .build();
+                    user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
+                        if (profileTask.isSuccessful()) {
+                            // Guardar el estado de inicio de sesión
+                            getSharedPreferences("prefs", MODE_PRIVATE).edit().putBoolean("isLoggedIn", true).apply();
+                            // Guardar el nombre de usuario en Firestore
+                            saveUserToFirestore(user.getEmail(), registerNameField.getText().toString());
+                            showHome(registerEmailField.getText().toString(), registerNameField.getText().toString());
+                        } else {
+                            showError(profileTask.getException().getMessage());
+                        }
+                    });
+                }
+            } else {
+                showError(task.getException().getMessage());
+            }
+            progressBar.setVisibility(View.GONE);
+            registerButton.setEnabled(true);
         });
+    });
+}
+
+    private void saveUserToFirestore(String email, String name) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> user = new HashMap<>();
+        user.put("email", email);
+        user.put("name", name);
+
+        db.collection("users").document(email)
+                .set(user)
+                .addOnSuccessListener(aVoid -> {
+                    // Usuario guardado exitosamente
+                })
+                .addOnFailureListener(e -> {
+                    // Error al guardar el usuario
+                    showError(e.getMessage());
+                });
     }
 
     private void showError(String error){
@@ -98,11 +120,12 @@ public class Register extends AppCompatActivity {
 
     }
 
-    private void showHome(String email, String name){
-        Intent intent = new Intent(this, Home.class);
-        intent.putExtra("email", email);
-        intent.putExtra("name", name);
-        startActivity(intent);
-
-    }
+    private void showHome(String email, String name) {
+    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
+    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
+    Intent intent = new Intent(this, Home.class);
+    intent.putExtra("email", email);
+    intent.putExtra("name", name);
+    startActivity(intent);
+}
 }

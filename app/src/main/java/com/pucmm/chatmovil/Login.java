@@ -88,10 +88,12 @@ public class Login extends AppCompatActivity {
     }
 
     private void showHome(String email, String name) {
-        Intent intent = new Intent(this, Home.class);
-        intent.putExtra("email", email);
-        intent.putExtra("name", name);
-        startActivity(intent);
-    }
+    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
+    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
+    Intent intent = new Intent(this, Home.class);
+    intent.putExtra("email", email);
+    intent.putExtra("name", name);
+    startActivity(intent);
+}
 
 }

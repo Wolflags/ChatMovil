@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class Login extends AppCompatActivity {
 
@@ -48,32 +49,34 @@ public class Login extends AppCompatActivity {
     }
 
     private void setup() {
-        loginButton.setOnClickListener(view -> {
-            if (loginEmailField.getText().toString().isEmpty() || loginPasswordField.getText().toString().isEmpty()) {
-                return;
-            }
-            progressBar.setVisibility(View.VISIBLE);
-            loginButton.setEnabled(false);
-            new Handler().postDelayed(() -> {
-                FirebaseAuth.getInstance().signInWithEmailAndPassword(loginEmailField.getText().toString(), loginPasswordField.getText().toString()).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        startActivity(new Intent(Login.this, Home.class));
-                        finish();
-                    } else {
-                        showError(task.getException().getMessage());
-                        progressBar.setVisibility(View.GONE);
-                        loginButton.setEnabled(true);
+    loginButton.setOnClickListener(view -> {
+        if (loginEmailField.getText().toString().isEmpty() || loginPasswordField.getText().toString().isEmpty()) {
+            return;
+        }
+        progressBar.setVisibility(View.VISIBLE);
+        loginButton.setEnabled(false);
+        new Handler().postDelayed(() -> {
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(loginEmailField.getText().toString(), loginPasswordField.getText().toString()).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    if (user != null) {
+                        String displayName = user.getDisplayName();
+                        getSharedPreferences("prefs", MODE_PRIVATE).edit().putBoolean("isLoggedIn", true).apply();
+                        showHome(loginEmailField.getText().toString(), displayName);
                     }
-                });
+                } else {
+                    showError(task.getException().getMessage());
+                    progressBar.setVisibility(View.GONE);
+                    loginButton.setEnabled(true);
+                }
+            });
+        }, 1000);
+    });
 
-
-            }, 1000);
-        });
-
-        registerButton.setOnClickListener(view -> {
-            startActivity(new Intent(Login.this, Register.class));
-        });
-    }
+    registerButton.setOnClickListener(view -> {
+        startActivity(new Intent(Login.this, Register.class));
+    });
+}
 
     private void showError(String error){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -82,6 +85,13 @@ public class Login extends AppCompatActivity {
         builder.setPositiveButton("Aceptar", null);
         builder.create().show();
 
+    }
+
+    private void showHome(String email, String name) {
+        Intent intent = new Intent(this, Home.class);
+        intent.putExtra("email", email);
+        intent.putExtra("name", name);
+        startActivity(intent);
     }
 
 }

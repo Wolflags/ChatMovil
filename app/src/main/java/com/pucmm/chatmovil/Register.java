@@ -53,41 +53,39 @@ public class Register extends AppCompatActivity {
     }
 
     private void setup() {
-        registerButton.setOnClickListener(view -> {
-            if (registerEmailField.getText().toString().isEmpty() || registerPasswordField.getText().toString().isEmpty() || registerNameField.getText().toString().isEmpty()) {
-                return;
-            }
-
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    registerButton.setEnabled(false);
-
-
-
-
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(registerEmailField.getText().toString(), registerPasswordField.getText().toString()).addOnCompleteListener(task -> {
-    if (task.isSuccessful()) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                .setDisplayName(registerNameField.getText().toString())
-                .build();
-            user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
-                if (profileTask.isSuccessful()) {
-                    showHome(registerEmailField.getText().toString(), registerNameField.getText().toString());
-                } else {
-                    showError(profileTask.getException().getMessage());
-                }
-            });
+    registerButton.setOnClickListener(view -> {
+        if (registerEmailField.getText().toString().isEmpty() || registerPasswordField.getText().toString().isEmpty() || registerNameField.getText().toString().isEmpty()) {
+            return;
         }
-    } else {
-        showError(task.getException().getMessage());
-    }
-    progressBar.setVisibility(View.GONE);
-    registerButton.setEnabled(true);
-});
+
+        progressBar.setVisibility(View.VISIBLE);
+        registerButton.setEnabled(false);
+
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(registerEmailField.getText().toString(), registerPasswordField.getText().toString()).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                        .setDisplayName(registerNameField.getText().toString())
+                        .build();
+                    user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
+                        if (profileTask.isSuccessful()) {
+                            // Guardar el estado de inicio de sesión
+                            getSharedPreferences("prefs", MODE_PRIVATE).edit().putBoolean("isLoggedIn", true).apply();
+                            showHome(registerEmailField.getText().toString(), registerNameField.getText().toString());
+                        } else {
+                            showError(profileTask.getException().getMessage());
+                        }
+                    });
+                }
+            } else {
+                showError(task.getException().getMessage());
+            }
+            progressBar.setVisibility(View.GONE);
+            registerButton.setEnabled(true);
         });
-    }
+    });
+}
 
     private void showError(String error){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -98,11 +96,10 @@ public class Register extends AppCompatActivity {
 
     }
 
-    private void showHome(String email, String name){
-        Intent intent = new Intent(this, Home.class);
-        intent.putExtra("email", email);
-        intent.putExtra("name", name);
-        startActivity(intent);
-
-    }
+    private void showHome(String email, String name) {
+    Intent intent = new Intent(this, Home.class);
+    intent.putExtra("email", email);
+    intent.putExtra("name", name);
+    startActivity(intent);
+}
 }

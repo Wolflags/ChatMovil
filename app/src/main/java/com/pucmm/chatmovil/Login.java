@@ -62,7 +62,7 @@ public class Login extends AppCompatActivity {
                     if (user != null) {
                         String displayName = user.getDisplayName();
                         getSharedPreferences("prefs", MODE_PRIVATE).edit().putBoolean("isLoggedIn", true).apply();
-                        showHome(loginEmailField.getText().toString(), displayName);
+                        showChat(loginEmailField.getText().toString(), displayName);
                     }
                 } else {
                     showError(task.getException().getMessage());
@@ -87,13 +87,25 @@ public class Login extends AppCompatActivity {
 
     }
 
-    private void showHome(String email, String name) {
-    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
-    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
-    Intent intent = new Intent(this, Home.class);
-    intent.putExtra("email", email);
-    intent.putExtra("name", name);
-    startActivity(intent);
-}
+//    private void showHome(String email, String name) {
+//        getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
+//        getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
+//        Intent intent = new Intent(this, Home.class);
+//        intent.putExtra("email", email);
+//        intent.putExtra("name", name);
+//        startActivity(intent);
+//    }
+
+    private void showChat(String email, String name) {
+        getSharedPreferences("prefs", MODE_PRIVATE).edit()
+                .putString("email", email)
+                .putString("name", name)
+                .apply();
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("email", email);
+        intent.putExtra("name", name);
+        startActivity(intent);
+        finish(); // Esto cierra la actividad de login para que el usuario no pueda volver atrás
+    }
 
 }

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -39,11 +40,18 @@ public class ChatActivity extends AppCompatActivity {
     private EditText messageEditText;
     private Button sendButton;
     private RecyclerView recyclerView;
+    private String userEmail;
+    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        Intent intent = getIntent();
+        userEmail = intent.getStringExtra("email");
+        userName = intent.getStringExtra("name");
+
 
         db = FirebaseFirestore.getInstance();
         messagesRef = db.collection("messages");
@@ -67,7 +75,7 @@ public class ChatActivity extends AppCompatActivity {
             Map<String, Object> message = new HashMap<>();
             message.put("content", messageText);
             message.put("senderId", FirebaseAuth.getInstance().getCurrentUser().getUid());
-            message.put("senderName", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+            message.put("senderName", userName);
             message.put("timestamp", com.google.firebase.Timestamp.now());
 
             messagesRef.add(message)

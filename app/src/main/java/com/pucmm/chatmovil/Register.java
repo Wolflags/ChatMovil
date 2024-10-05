@@ -57,42 +57,42 @@ public class Register extends AppCompatActivity {
     }
 
 
-private void setup() {
-    registerButton.setOnClickListener(view -> {
-        if (registerEmailField.getText().toString().isEmpty() || registerPasswordField.getText().toString().isEmpty() || registerNameField.getText().toString().isEmpty()) {
-            return;
-        }
-
-        progressBar.setVisibility(View.VISIBLE);
-        registerButton.setEnabled(false);
-
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(registerEmailField.getText().toString(), registerPasswordField.getText().toString()).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if (user != null) {
-                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                        .setDisplayName(registerNameField.getText().toString())
-                        .build();
-                    user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
-                        if (profileTask.isSuccessful()) {
-                            // Guardar el estado de inicio de sesión
-                            getSharedPreferences("prefs", MODE_PRIVATE).edit().putBoolean("isLoggedIn", true).apply();
-                            // Guardar el nombre de usuario en Firestore
-                            saveUserToFirestore(user.getEmail(), registerNameField.getText().toString());
-                            showHome(registerEmailField.getText().toString(), registerNameField.getText().toString());
-                        } else {
-                            showError(profileTask.getException().getMessage());
-                        }
-                    });
-                }
-            } else {
-                showError(task.getException().getMessage());
+    private void setup() {
+        registerButton.setOnClickListener(view -> {
+            if (registerEmailField.getText().toString().isEmpty() || registerPasswordField.getText().toString().isEmpty() || registerNameField.getText().toString().isEmpty()) {
+                return;
             }
-            progressBar.setVisibility(View.GONE);
-            registerButton.setEnabled(true);
+
+            progressBar.setVisibility(View.VISIBLE);
+            registerButton.setEnabled(false);
+
+            FirebaseAuth.getInstance().createUserWithEmailAndPassword(registerEmailField.getText().toString(), registerPasswordField.getText().toString()).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    if (user != null) {
+                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(registerNameField.getText().toString())
+                            .build();
+                        user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
+                            if (profileTask.isSuccessful()) {
+                                // Guardar el estado de inicio de sesión
+                                getSharedPreferences("prefs", MODE_PRIVATE).edit().putBoolean("isLoggedIn", true).apply();
+                                // Guardar el nombre de usuario en Firestore
+                                saveUserToFirestore(user.getEmail(), registerNameField.getText().toString());
+                                showChat(registerEmailField.getText().toString(), registerNameField.getText().toString());
+                            } else {
+                                showError(profileTask.getException().getMessage());
+                            }
+                        });
+                    }
+                } else {
+                    showError(task.getException().getMessage());
+                }
+                progressBar.setVisibility(View.GONE);
+                registerButton.setEnabled(true);
+            });
         });
-    });
-}
+    }
 
     private void saveUserToFirestore(String email, String name) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -117,15 +117,26 @@ private void setup() {
         builder.setMessage(error);
         builder.setPositiveButton("Aceptar", null);
         builder.create().show();
-
     }
 
-    private void showHome(String email, String name) {
-    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
-    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
-    Intent intent = new Intent(this, Home.class);
-    intent.putExtra("email", email);
-    intent.putExtra("name", name);
-    startActivity(intent);
-}
+//    private void showHome(String email, String name) {
+//        getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
+//        getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
+//        Intent intent = new Intent(this, Home.class);
+//        intent.putExtra("email", email);
+//        intent.putExtra("name", name);
+//        startActivity(intent);
+//    }
+
+    private void showChat(String email, String name) {
+        getSharedPreferences("prefs", MODE_PRIVATE).edit()
+                .putString("email", email)
+                .putString("name", name)
+                .apply();
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("email", email);
+        intent.putExtra("name", name);
+        startActivity(intent);
+        finish(); // Esto cierra la actividad de login para que el usuario no pueda volver atrás
+    }
 }

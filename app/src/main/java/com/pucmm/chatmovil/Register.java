@@ -123,7 +123,7 @@ private void setup() {
     private void showHome(String email, String name) {
     getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
     getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
-    Intent intent = new Intent(this, Home.class);
+    Intent intent = new Intent(this, Home2.class);
     intent.putExtra("email", email);
     intent.putExtra("name", name);
     startActivity(intent);

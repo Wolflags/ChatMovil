@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.pucmm.chatmovil.utils.FirebaseUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -95,21 +96,19 @@ private void setup() {
 }
 
     private void saveUserToFirestore(String email, String name) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> user = new HashMap<>();
-        user.put("email", email);
-        user.put("name", name);
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    UserModel user = new UserModel(name, email, null, FirebaseUtil.currentUserId()); // Asumiendo que el URL de la foto de perfil es null por ahora
 
-        db.collection("users").document(email)
-                .set(user)
-                .addOnSuccessListener(aVoid -> {
-                    // Usuario guardado exitosamente
-                })
-                .addOnFailureListener(e -> {
-                    // Error al guardar el usuario
-                    showError(e.getMessage());
-                });
-    }
+    db.collection("users").document(email)
+            .set(user)
+            .addOnSuccessListener(aVoid -> {
+                // Usuario guardado exitosamente
+            })
+            .addOnFailureListener(e -> {
+                // Error al guardar el usuario
+                showError(e.getMessage());
+            });
+}
 
     private void showError(String error){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

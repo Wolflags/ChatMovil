@@ -6,16 +6,17 @@ import java.util.List;
 
 public class ChatModel {
     String chatId;
-    List<String> users;
+    List<String> userIds;
     Timestamp lastMessageTime;
     String lastMessageSenderId;
+    String lastMessage;
 
     public ChatModel() {
     }
 
     public ChatModel(String chatId, List<String> list, Timestamp now, String s) {
         this.chatId = chatId;
-        this.users = list;
+        this.userIds = list;
         this.lastMessageTime = now;
         this.lastMessageSenderId = s;
     }
@@ -36,12 +37,12 @@ public class ChatModel {
         this.lastMessageTime = lastMessageTime;
     }
 
-    public List<String> getUsers() {
-        return users;
+    public List<String> getUserIds() {
+        return userIds;
     }
 
-    public void setUsers(List<String> users) {
-        this.users = users;
+    public void setUserIds(List<String> userIds) {
+        this.userIds = userIds;
     }
 
     public String getLastMessageSenderId() {
@@ -50,5 +51,13 @@ public class ChatModel {
 
     public void setLastMessageSenderId(String lastMessageSenderId) {
         this.lastMessageSenderId = lastMessageSenderId;
+    }
+
+    public String getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(String lastMessage) {
+        this.lastMessage = lastMessage;
     }
 }

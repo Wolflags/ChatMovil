@@ -1,4 +1,4 @@
-package com.pucmm.chatmovil;
+package com.pucmm.chatmovil.models;
 
 import com.google.firebase.Timestamp;
 

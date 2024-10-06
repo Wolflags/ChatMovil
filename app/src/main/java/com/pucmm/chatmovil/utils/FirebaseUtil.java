@@ -25,7 +25,11 @@ public class FirebaseUtil {
     }
 
     public static DocumentReference getChatReference(String chatId) {
-        return FirebaseFirestore.getInstance().collection("chats2").document(chatId);
+        return FirebaseFirestore.getInstance().collection("chatrooms").document(chatId);
+    }
+
+    public static CollectionReference getChatMessageReference(String chatId) {
+        return getChatReference(chatId).collection("chats");
     }
 
     public static String getChatId(String userId1, String userId2) {

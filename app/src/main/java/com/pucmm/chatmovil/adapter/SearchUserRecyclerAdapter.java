@@ -15,7 +15,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.pucmm.chatmovil.ChatActivity;
 import com.pucmm.chatmovil.R;
-import com.pucmm.chatmovil.UserModel;
+import com.pucmm.chatmovil.models.UserModel;
 import com.pucmm.chatmovil.utils.AndroidUtil;
 import com.pucmm.chatmovil.utils.FirebaseUtil;
 

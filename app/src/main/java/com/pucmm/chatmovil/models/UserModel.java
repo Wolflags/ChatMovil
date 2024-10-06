@@ -1,4 +1,4 @@
-package com.pucmm.chatmovil;
+package com.pucmm.chatmovil.models;
 
 public class UserModel {
     private String name;

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
 
-import com.pucmm.chatmovil.UserModel;
+import com.pucmm.chatmovil.models.UserModel;
 
 public class AndroidUtil {
 

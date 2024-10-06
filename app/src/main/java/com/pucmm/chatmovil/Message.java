@@ -3,6 +3,7 @@ package com.pucmm.chatmovil;
 import com.google.firebase.Timestamp;
 
 public class Message {
+    private String chatId;
     private String content;
     private String senderId;
     private String senderName;

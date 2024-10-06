@@ -16,25 +16,33 @@ import com.pucmm.chatmovil.R;
 import com.pucmm.chatmovil.models.ChatMessageModel;
 import com.pucmm.chatmovil.utils.FirebaseUtil;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 public class ChatRecyclerAdapter extends FirestoreRecyclerAdapter<ChatMessageModel, ChatRecyclerAdapter.ChatModelViewHolder> {
 
     Context context;
+    private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
-    public ChatRecyclerAdapter(@NonNull FirestoreRecyclerOptions<ChatMessageModel> options,Context context) {
+    public ChatRecyclerAdapter(@NonNull FirestoreRecyclerOptions<ChatMessageModel> options, Context context) {
         super(options);
         this.context = context;
     }
 
     @Override
     protected void onBindViewHolder(@NonNull ChatModelViewHolder holder, int position, @NonNull ChatMessageModel model) {
+        String formattedTimestamp = sdf.format(model.getTimestamp().toDate());
+
         if (model.getSenderId().equals(FirebaseUtil.currentUserId())) {
             holder.leftChatLayout.setVisibility(View.GONE);
             holder.rightChatLayout.setVisibility(View.VISIBLE);
             holder.rightChatTextview.setText(model.getMessage());
-        }else{
+            holder.rightChatTimestamp.setText("   " + formattedTimestamp);
+        } else {
             holder.rightChatLayout.setVisibility(View.GONE);
             holder.leftChatLayout.setVisibility(View.VISIBLE);
             holder.leftChatTextview.setText(model.getMessage());
+            holder.leftChatTimestamp.setText("   " + formattedTimestamp);
         }
     }
 
@@ -48,8 +56,7 @@ public class ChatRecyclerAdapter extends FirestoreRecyclerAdapter<ChatMessageMod
     class ChatModelViewHolder extends RecyclerView.ViewHolder {
 
         LinearLayout leftChatLayout, rightChatLayout;
-        TextView leftChatTextview, rightChatTextview;
-
+        TextView leftChatTextview, rightChatTextview, leftChatTimestamp, rightChatTimestamp;
 
         public ChatModelViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -58,9 +65,8 @@ public class ChatRecyclerAdapter extends FirestoreRecyclerAdapter<ChatMessageMod
             rightChatLayout = itemView.findViewById(R.id.right_chat_layout);
             leftChatTextview = itemView.findViewById(R.id.left_chat_textview);
             rightChatTextview = itemView.findViewById(R.id.right_chat_textview);
-
-
+            leftChatTimestamp = itemView.findViewById(R.id.left_chat_timestamp);
+            rightChatTimestamp = itemView.findViewById(R.id.right_chat_timestamp);
         }
     }
-
 }

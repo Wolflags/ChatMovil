@@ -38,6 +38,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation ("com.firebaseui:firebase-ui-firestore:8.0.2")
+    //Firebase Messaging
+    implementation ("com.google.firebase:firebase-messaging")
 
     implementation(libs.appcompat)
     implementation(libs.material)

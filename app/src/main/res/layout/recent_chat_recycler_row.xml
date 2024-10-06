@@ -29,6 +29,7 @@
                 tools:text="Username"
                 android:textSize="18sp"
                 android:textStyle="bold"
+                android:textColor="@color/black"
                 android:id="@+id/username_text"
                 />
 
@@ -38,6 +39,7 @@
                 tools:text="10:00"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="10dp"
+                android:textColor="@color/black"
                 android:id="@+id/last_message_time_text"/>
 
         </RelativeLayout>
@@ -49,6 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="email@email.com"
+            android:textColor="@color/black"
             android:id="@+id/last_message_text"/>
 
 

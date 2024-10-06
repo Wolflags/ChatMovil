@@ -1,16 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfileFragment">
+    tools:context=".ProfileFragment"
+    android:orientation="vertical"
+    android:gravity="center">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="wrap_content"
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:background="@drawable/circular_bg"
+        android:backgroundTint="@color/colorPrimary"
+        android:src="@drawable/baseline_person_24"
+        android:scaleType="centerCrop"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+    <Button
+        android:id="@+id/cerrar_sesion_btn"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:text="Profile Screen"
-        android:textSize="22sp"
-        android:layout_centerInParent="true"/>
+        android:background="@drawable/btn_rounded_corner"
+        android:text="Cerrar Sesión"/>
 
-</RelativeLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

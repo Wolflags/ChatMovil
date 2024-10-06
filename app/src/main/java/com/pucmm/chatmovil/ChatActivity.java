@@ -40,18 +40,19 @@ public class ChatActivity extends AppCompatActivity {
     private EditText messageEditText;
     private Button sendButton;
     private RecyclerView recyclerView;
-    private String userEmail;
-    private String userName;
+
+    private String currentUserId;
+    private String otherUserId;
+    private String chatId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        Intent intent = getIntent();
-        userEmail = intent.getStringExtra("email");
-        userName = intent.getStringExtra("name");
-
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        otherUserId = getIntent().getStringExtra("otherUserId");
+        chatId = generateChatId(currentUserId, otherUserId);
 
         db = FirebaseFirestore.getInstance();
         messagesRef = db.collection("messages");
@@ -69,14 +70,20 @@ public class ChatActivity extends AppCompatActivity {
         listenForMessages();
     }
 
+    private String generateChatId(String userId1, String userId2) {
+        // Asegúrate de que el chatId sea único y consistente para la misma pareja de usuarios
+        return userId1.compareTo(userId2) < 0 ? userId1 + "_" + userId2 : userId2 + "_" + userId1;
+    }
+
     private void sendMessage() {
         String messageText = messageEditText.getText().toString().trim();
         if (!messageText.isEmpty()) {
             Map<String, Object> message = new HashMap<>();
+            message.put("chatId", chatId);
             message.put("content", messageText);
-            message.put("senderId", FirebaseAuth.getInstance().getCurrentUser().getUid());
-            message.put("senderName", userName);
-            message.put("timestamp", com.google.firebase.Timestamp.now());
+            message.put("senderId", currentUserId);
+            message.put("receiverId", otherUserId);
+            message.put("timestamp", FieldValue.serverTimestamp());
 
             messagesRef.add(message)
                     .addOnSuccessListener(documentReference -> {
@@ -88,7 +95,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void listenForMessages() {
-        messagesRef.orderBy("timestamp", Query.Direction.ASCENDING)
+        messagesRef.whereEqualTo("chatId", chatId)
+                .orderBy("timestamp", Query.Direction.ASCENDING)
                 .addSnapshotListener((value, error) -> {
                     if (error != null) {
                         Log.w(TAG, "Listen failed.", error);

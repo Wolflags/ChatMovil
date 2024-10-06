@@ -77,6 +77,8 @@
         android:hint="Escribe un mensaje..."
         android:padding="10dp"
         android:id="@+id/chat_message_input"
+        android:textColor="@color/black"
+        android:textColorHint="@color/hintColors"
         />
 
     <ImageButton

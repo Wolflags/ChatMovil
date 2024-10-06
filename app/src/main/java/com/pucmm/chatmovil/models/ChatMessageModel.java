@@ -4,15 +4,15 @@ import com.google.firebase.Timestamp;
 
 public class ChatMessageModel {
     private String message;
-    private String senderIc;
+    private String senderId;
     private Timestamp timestamp;
 
     public ChatMessageModel() {
     }
 
-    public ChatMessageModel(String message, String senderIc, Timestamp timestamp) {
+    public ChatMessageModel(String message, String senderId, Timestamp timestamp) {
         this.message = message;
-        this.senderIc = senderIc;
+        this.senderId = senderId;
         this.timestamp = timestamp;
     }
 
@@ -24,12 +24,12 @@ public class ChatMessageModel {
         this.message = message;
     }
 
-    public String getSenderIc() {
-        return senderIc;
+    public String getSenderId() {
+        return senderId;
     }
 
-    public void setSenderIc(String senderIc) {
-        this.senderIc = senderIc;
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
     }
 
     public Timestamp getTimestamp() {

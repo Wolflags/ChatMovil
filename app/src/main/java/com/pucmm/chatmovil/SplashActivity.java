@@ -26,7 +26,7 @@ protected void onCreate(Bundle savedInstanceState) {
     new Handler().postDelayed(() -> {
         boolean isLoggedIn = getSharedPreferences("prefs", MODE_PRIVATE).getBoolean("isLoggedIn", false);
         if (isLoggedIn) {
-            startActivity(new Intent(SplashActivity.this, Home.class));
+            startActivity(new Intent(SplashActivity.this, UserListActivity.class));
         } else {
             startActivity(new Intent(SplashActivity.this, Login.class));
         }

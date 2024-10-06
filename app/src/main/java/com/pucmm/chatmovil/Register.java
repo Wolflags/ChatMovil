@@ -79,7 +79,7 @@ public class Register extends AppCompatActivity {
                                 getSharedPreferences("prefs", MODE_PRIVATE).edit().putBoolean("isLoggedIn", true).apply();
                                 // Guardar el nombre de usuario en Firestore
                                 saveUserToFirestore(user.getEmail(), registerNameField.getText().toString());
-                                showChat(registerEmailField.getText().toString(), registerNameField.getText().toString());
+                                showUserList(registerEmailField.getText().toString(), registerNameField.getText().toString());
                             } else {
                                 showError(profileTask.getException().getMessage());
                             }
@@ -128,12 +128,24 @@ public class Register extends AppCompatActivity {
 //        startActivity(intent);
 //    }
 
-    private void showChat(String email, String name) {
+//    private void showChat(String email, String name) {
+//        getSharedPreferences("prefs", MODE_PRIVATE).edit()
+//                .putString("email", email)
+//                .putString("name", name)
+//                .apply();
+//        Intent intent = new Intent(this, ChatActivity.class);
+//        intent.putExtra("email", email);
+//        intent.putExtra("name", name);
+//        startActivity(intent);
+//        finish(); // Esto cierra la actividad de login para que el usuario no pueda volver atrás
+//    }
+
+    private void showUserList(String email, String name) {
         getSharedPreferences("prefs", MODE_PRIVATE).edit()
                 .putString("email", email)
                 .putString("name", name)
                 .apply();
-        Intent intent = new Intent(this, ChatActivity.class);
+        Intent intent = new Intent(this, UserListActivity.class);
         intent.putExtra("email", email);
         intent.putExtra("name", name);
         startActivity(intent);

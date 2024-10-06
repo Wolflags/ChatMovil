@@ -7,17 +7,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.pucmm.chatmovil.utils.AndroidUtil;
+import com.pucmm.chatmovil.utils.FirebaseUtil;
+
+import java.util.Arrays;
 
 public class ChatActivity extends AppCompatActivity {
 
     UserModel otherUser;
+    String chatId;
+    ChatModel chatModel;
 
     EditText messageInput;
     ImageButton messageSendBtn;
@@ -39,6 +49,7 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         otherUser = AndroidUtil.getUserModelFromIntent(getIntent());
+        chatId = FirebaseUtil.getChatId(FirebaseUtil.currentUserId(), otherUser.getUserId());
 
         messageInput = findViewById(R.id.chat_message_input);
         messageSendBtn = findViewById(R.id.message_send_btn);
@@ -51,7 +62,25 @@ public class ChatActivity extends AppCompatActivity {
         });
         otherUsername.setText(otherUser.getName());
 
+        getOrCreateChat();
+    }
 
+    private void getOrCreateChat() {
+
+        FirebaseUtil.getChatReference(chatId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    chatModel = task.getResult().toObject(ChatModel.class);
+                    if (chatModel == null) {
+                        chatModel = new ChatModel(chatId, Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUserId()), Timestamp.now(), "");
+                        FirebaseUtil.getChatReference(chatId).set(chatModel);
+                    }
+                }
+            }
+        });
 
     }
+
+
 }

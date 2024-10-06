@@ -99,7 +99,7 @@ private void setup() {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     UserModel user = new UserModel(name, email, null, FirebaseUtil.currentUserId()); // Asumiendo que el URL de la foto de perfil es null por ahora
 
-    db.collection("users").document(email)
+    db.collection("users2").document(email)
             .set(user)
             .addOnSuccessListener(aVoid -> {
                 // Usuario guardado exitosamente

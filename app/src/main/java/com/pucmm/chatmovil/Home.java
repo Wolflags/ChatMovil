@@ -38,7 +38,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
     //OBTENER EL NOMBRE DEL USUARIO DE LA BASE DE DATOS POR EL EMAIL
 //    if (email != null) {
-//        FirebaseFirestore.getInstance().collection("users").document(email).get()
+//        FirebaseFirestore.getInstance().collection("users2").document(email).get()
 //            .addOnSuccessListener(documentSnapshot -> {
 //                if (documentSnapshot.exists()) {
 //                    String name = documentSnapshot.getString("name");

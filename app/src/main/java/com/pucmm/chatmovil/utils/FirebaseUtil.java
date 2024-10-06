@@ -17,11 +17,23 @@ public class FirebaseUtil {
     }
 
     public static DocumentReference currentUserDetails() {
-        return FirebaseFirestore.getInstance().collection("users").document(currentUserId());
+        return FirebaseFirestore.getInstance().collection("users2").document(currentUserId());
     }
 
     public static CollectionReference allUsers() {
-        return FirebaseFirestore.getInstance().collection("users");
+        return FirebaseFirestore.getInstance().collection("users2");
+    }
+
+    public static DocumentReference getChatReference(String chatId) {
+        return FirebaseFirestore.getInstance().collection("chats2").document(chatId);
+    }
+
+    public static String getChatId(String userId1, String userId2) {
+        if(userId1.hashCode() < userId2.hashCode()) {
+            return userId1 + "_" + userId2;
+        } else {
+            return userId2 + "_" + userId1;
+        }
     }
 
 

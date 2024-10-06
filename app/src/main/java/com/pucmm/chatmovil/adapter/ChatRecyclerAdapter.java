@@ -4,12 +4,14 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.pucmm.chatmovil.R;
@@ -36,37 +38,54 @@ public class ChatRecyclerAdapter extends FirestoreRecyclerAdapter<ChatMessageMod
         if (model.getSenderId().equals(FirebaseUtil.currentUserId())) {
             holder.leftChatLayout.setVisibility(View.GONE);
             holder.rightChatLayout.setVisibility(View.VISIBLE);
-            holder.rightChatTextview.setText(model.getMessage());
-            holder.rightChatTimestamp.setText("   " + formattedTimestamp);
+            if (model.getImageUrl() != null) {
+                holder.rightChatImageView.setVisibility(View.VISIBLE);
+                Glide.with(context).load(model.getImageUrl()).into(holder.rightChatImageView);
+                holder.rightChatTextview.setVisibility(View.GONE);
+            } else {
+                holder.rightChatImageView.setVisibility(View.GONE);
+                holder.rightChatTextview.setVisibility(View.VISIBLE);
+                holder.rightChatTextview.setText(model.getMessage());
+            }
+            holder.rightChatTimestamp.setText(formattedTimestamp);
         } else {
             holder.rightChatLayout.setVisibility(View.GONE);
             holder.leftChatLayout.setVisibility(View.VISIBLE);
-            holder.leftChatTextview.setText(model.getMessage());
-            holder.leftChatTimestamp.setText("   " + formattedTimestamp);
+            if (model.getImageUrl() != null) {
+                holder.leftChatImageView.setVisibility(View.VISIBLE);
+                Glide.with(context).load(model.getImageUrl()).into(holder.leftChatImageView);
+                holder.leftChatTextview.setVisibility(View.GONE);
+            } else {
+                holder.leftChatImageView.setVisibility(View.GONE);
+                holder.leftChatTextview.setVisibility(View.VISIBLE);
+                holder.leftChatTextview.setText(model.getMessage());
+            }
+            holder.leftChatTimestamp.setText(formattedTimestamp);
         }
     }
 
     @NonNull
     @Override
     public ChatModelViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.chat_messages_recycler_row, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chat_messages_recycler_row, parent, false);
         return new ChatModelViewHolder(view);
     }
 
-    class ChatModelViewHolder extends RecyclerView.ViewHolder {
-
+    static class ChatModelViewHolder extends RecyclerView.ViewHolder {
         LinearLayout leftChatLayout, rightChatLayout;
         TextView leftChatTextview, rightChatTextview, leftChatTimestamp, rightChatTimestamp;
+        ImageView leftChatImageView, rightChatImageView;
 
-        public ChatModelViewHolder(@NonNull View itemView) {
+        ChatModelViewHolder(View itemView) {
             super(itemView);
-
             leftChatLayout = itemView.findViewById(R.id.left_chat_layout);
             rightChatLayout = itemView.findViewById(R.id.right_chat_layout);
             leftChatTextview = itemView.findViewById(R.id.left_chat_textview);
             rightChatTextview = itemView.findViewById(R.id.right_chat_textview);
             leftChatTimestamp = itemView.findViewById(R.id.left_chat_timestamp);
             rightChatTimestamp = itemView.findViewById(R.id.right_chat_timestamp);
+            leftChatImageView = itemView.findViewById(R.id.left_chat_image_view);
+            rightChatImageView = itemView.findViewById(R.id.right_chat_image_view);
         }
     }
 }

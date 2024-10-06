@@ -3,9 +3,11 @@ package com.pucmm.chatmovil;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +28,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         Message message = messages.get(position);
         holder.senderNameTextView.setText(message.getSenderName());
-        holder.messageContentTextView.setText(message.getContent());
         holder.timestampTextView.setText(sdf.format(message.getTimestamp().toDate()));
+
+        if (message.getImageUrl() != null) {
+            holder.messageContentTextView.setVisibility(View.GONE);
+            holder.messageImageView.setVisibility(View.VISIBLE);
+            Glide.with(holder.itemView.getContext()).load(message.getImageUrl()).into(holder.messageImageView);
+        } else {
+            holder.messageImageView.setVisibility(View.GONE);
+            holder.messageContentTextView.setVisibility(View.VISIBLE);
+            holder.messageContentTextView.setText(message.getContent());
+        }
     }
 
     @Override
@@ -45,12 +56,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         TextView senderNameTextView;
         TextView messageContentTextView;
         TextView timestampTextView;
+        ImageView messageImageView;
 
         MessageViewHolder(View itemView) {
             super(itemView);
             senderNameTextView = itemView.findViewById(R.id.senderNameTextView);
             messageContentTextView = itemView.findViewById(R.id.messageContentTextView);
             timestampTextView = itemView.findViewById(R.id.timestampTextView);
+            messageImageView = itemView.findViewById(R.id.messageImageView);
         }
     }
 }

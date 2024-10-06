@@ -40,11 +40,14 @@ dependencies {
     implementation ("com.firebaseui:firebase-ui-firestore:8.0.2")
     //Firebase Messaging
     implementation ("com.google.firebase:firebase-messaging")
+    implementation ("com.github.dhaval2404:imagepicker:2.1")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
 
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

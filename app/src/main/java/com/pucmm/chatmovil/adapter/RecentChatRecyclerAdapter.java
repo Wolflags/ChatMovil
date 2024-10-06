@@ -2,6 +2,7 @@ package com.pucmm.chatmovil.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,17 @@ protected void onBindViewHolder(@NonNull ChatRoomModelViewHolder holder, int pos
             boolean lastMessageSentByMe = model.getLastMessageSenderId().equals(FirebaseUtil.currentUserId());
 
             UserModel otherUserModel = task.getResult().toObject(UserModel.class);
+
+
+            FirebaseUtil.getOtherProfilePicReference(otherUserModel.getUserId()).getDownloadUrl()
+                    .addOnCompleteListener(t -> {
+                        if(t.isSuccessful()){
+                            Uri uri  = t.getResult();
+                            AndroidUtil.setProfilePic(context,uri,holder.profilePic);
+                        }
+                    });
+
+
             holder.username.setText(otherUserModel.getName());
             if(lastMessageSentByMe){
                 holder.lastMessageText.setText("Tú: " + model.getLastMessage());

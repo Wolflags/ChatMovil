@@ -2,7 +2,6 @@ package com.pucmm.chatmovil;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,9 +18,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.pucmm.chatmovil.models.UserModel;
+import com.pucmm.chatmovil.utils.FirebaseUtil;
 
 public class Register extends AppCompatActivity {
 
@@ -95,21 +93,19 @@ private void setup() {
 }
 
     private void saveUserToFirestore(String email, String name) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> user = new HashMap<>();
-        user.put("email", email);
-        user.put("name", name);
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    UserModel user = new UserModel(name, email, null, FirebaseUtil.currentUserId()); // Asumiendo que el URL de la foto de perfil es null por ahora
 
-        db.collection("users").document(email)
-                .set(user)
-                .addOnSuccessListener(aVoid -> {
-                    // Usuario guardado exitosamente
-                })
-                .addOnFailureListener(e -> {
-                    // Error al guardar el usuario
-                    showError(e.getMessage());
-                });
-    }
+    db.collection("users2").document(FirebaseUtil.currentUserId()) // Cambiar la clave del documento al userId
+            .set(user)
+            .addOnSuccessListener(aVoid -> {
+                // Usuario guardado exitosamente
+            })
+            .addOnFailureListener(e -> {
+                // Error al guardar el usuario
+                showError(e.getMessage());
+            });
+}
 
     private void showError(String error){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -123,7 +119,7 @@ private void setup() {
     private void showHome(String email, String name) {
     getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("email", email).apply();
     getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("name", name).apply();
-    Intent intent = new Intent(this, Home.class);
+    Intent intent = new Intent(this, Home2.class);
     intent.putExtra("email", email);
     intent.putExtra("name", name);
     startActivity(intent);

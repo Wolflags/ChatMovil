@@ -1,100 +1,144 @@
 package com.pucmm.chatmovil;
 
+import android.os.Bundle;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.pucmm.chatmovil.adapter.ChatRecyclerAdapter;
+import com.pucmm.chatmovil.adapter.SearchUserRecyclerAdapter;
+import com.pucmm.chatmovil.models.ChatMessageModel;
+import com.pucmm.chatmovil.models.ChatModel;
+import com.pucmm.chatmovil.models.UserModel;
+import com.pucmm.chatmovil.utils.AndroidUtil;
+import com.pucmm.chatmovil.utils.FirebaseUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 public class ChatActivity extends AppCompatActivity {
-    private static final String TAG = "ChatActivity";
 
-    private FirebaseFirestore db;
-    private CollectionReference messagesRef;
-    private MessageAdapter adapter;
-    private EditText messageEditText;
-    private Button sendButton;
-    private RecyclerView recyclerView;
+    UserModel otherUser;
+    String chatId;
+    ChatModel chatModel;
+    ChatRecyclerAdapter adapter;
+
+    EditText messageInput;
+    ImageButton messageSendBtn;
+    ImageButton backBtn;
+    TextView otherUsername;
+    RecyclerView recyclerView;
+    ImageView profilePic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_chat);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
-        db = FirebaseFirestore.getInstance();
-        messagesRef = db.collection("messages");
+        otherUser = AndroidUtil.getUserModelFromIntent(getIntent());
+        chatId = FirebaseUtil.getChatId(FirebaseUtil.currentUserId(), otherUser.getUserId());
 
-        messageEditText = findViewById(R.id.messageEditText);
-        sendButton = findViewById(R.id.sendButton);
-        recyclerView = findViewById(R.id.recyclerView);
+        messageInput = findViewById(R.id.chat_message_input);
+        messageSendBtn = findViewById(R.id.message_send_btn);
+        backBtn = findViewById(R.id.back_btn);
+        otherUsername = findViewById(R.id.other_username);
+        recyclerView = findViewById(R.id.chat_recycler_view);
 
-        adapter = new MessageAdapter();
+        backBtn.setOnClickListener((v) -> {
+            getOnBackPressedDispatcher().onBackPressed();
+        });
+        otherUsername.setText(otherUser.getName());
+
+        messageSendBtn.setOnClickListener((v) -> {
+            String message = messageInput.getText().toString().trim();
+            if (message.isEmpty()) {
+                return;
+            }
+            sendMessageToUser(message);
+        });
+
+        getOrCreateChat();
+        setupChatRecyclerView();
+    }
+
+    private void setupChatRecyclerView() {
+        Query query = FirebaseUtil.getChatMessageReference(chatId).orderBy("timestamp", Query.Direction.DESCENDING);
+
+        FirestoreRecyclerOptions<ChatMessageModel> options = new FirestoreRecyclerOptions.Builder<ChatMessageModel>()
+                .setQuery(query, ChatMessageModel.class)
+                .build();
+
+
+        adapter = new ChatRecyclerAdapter(options,getApplicationContext());
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager.setReverseLayout(true);
+        recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter.startListening();
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                recyclerView.smoothScrollToPosition(0);
+            }
+        });
 
-        sendButton.setOnClickListener(v -> sendMessage());
-
-        listenForMessages();
     }
 
-    private void sendMessage() {
-        String messageText = messageEditText.getText().toString().trim();
-        if (!messageText.isEmpty()) {
-            Map<String, Object> message = new HashMap<>();
-            message.put("content", messageText);
-            message.put("senderId", FirebaseAuth.getInstance().getCurrentUser().getUid());
-            message.put("senderName", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-            message.put("timestamp", com.google.firebase.Timestamp.now());
+    void sendMessageToUser(String message) {
 
-            messagesRef.add(message)
-                    .addOnSuccessListener(documentReference -> {
-                        messageEditText.setText("");
-                        Log.d(TAG, "Message sent successfully");
-                    })
-                    .addOnFailureListener(e -> Log.w(TAG, "Error sending message", e));
-        }
+        chatModel.setLastMessageTime(Timestamp.now());
+        chatModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
+        chatModel.setLastMessage(message);
+        FirebaseUtil.getChatReference(chatId).set(chatModel);
+
+        ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(), Timestamp.now());
+        FirebaseUtil.getChatMessageReference(chatId).add(chatMessageModel).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                messageInput.setText("");
+            }
+        });
     }
 
-    private void listenForMessages() {
-        messagesRef.orderBy("timestamp", Query.Direction.ASCENDING)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Log.w(TAG, "Listen failed.", error);
-                        return;
+    private void getOrCreateChat() {
+
+        FirebaseUtil.getChatReference(chatId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    chatModel = task.getResult().toObject(ChatModel.class);
+                    if (chatModel == null) {
+                        chatModel = new ChatModel(chatId, Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUserId()), Timestamp.now(), "");
+                        FirebaseUtil.getChatReference(chatId).set(chatModel);
                     }
+                }
+            }
+        });
 
-                    List<Message> messages = new ArrayList<>();
-                    for (QueryDocumentSnapshot doc : value) {
-                        Message message = doc.toObject(Message.class);
-                        messages.add(message);
-                    }
-                    adapter.updateMessages(messages);
-                    recyclerView.scrollToPosition(messages.size() - 1);
-                });
     }
+
+
 }
-

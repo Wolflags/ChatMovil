@@ -6,6 +6,11 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="offWhite">#FFf8f8f8</color>
+    <color name="offWhite">#FAFAFA</color>
     <color name="lightGrey">#FFD3D3D3</color>
+
+    <color name="chat_color_sender">#0026FF</color>
+    <color name="chat_color_receiver">#FF0000</color>
+
+    <color name="hintColors">#FF808080</color>
 </resources>

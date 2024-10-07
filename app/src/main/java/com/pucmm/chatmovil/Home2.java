@@ -1,7 +1,10 @@
 package com.pucmm.chatmovil;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -15,6 +18,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.pucmm.chatmovil.utils.FirebaseUtil;
 
 public class Home2 extends AppCompatActivity {
 
@@ -62,7 +67,27 @@ public class Home2 extends AppCompatActivity {
         });
         bottomNavigationView.setSelectedItemId(R.id.menu_chat);
 
+        FirebaseMessaging.getInstance().getToken()
+    .addOnCompleteListener(task -> {
+        if (!task.isSuccessful()) {
+            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+            return;
+        }
+
+        // Get new FCM registration token
+        String token = task.getResult();
+        Log.d(TAG, "TokenChino: " + token);
+
+        // Save the token to Firestore
+        FirebaseUtil.currentUserDetails().update("fcmToken", token)
+            .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM token successfully updated"))
+            .addOnFailureListener(e -> Log.w(TAG, "Error updating FCM token", e));
+    });
+
 
 
     }
+
+
+
 }

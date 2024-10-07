@@ -2,6 +2,7 @@ package com.pucmm.chatmovil;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class Home2 extends AppCompatActivity {
 
@@ -62,7 +64,16 @@ public class Home2 extends AppCompatActivity {
         });
         bottomNavigationView.setSelectedItemId(R.id.menu_chat);
 
+        getFCMToken();
 
+    }
 
+    void getFCMToken(){
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                String token = task.getResult();
+                Log.i("My token", token);
+            }
+        });
     }
 }

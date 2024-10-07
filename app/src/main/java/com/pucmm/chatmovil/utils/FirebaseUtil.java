@@ -64,6 +64,8 @@ public class FirebaseUtil {
     }
 
     public static void logout(){
+        //Eliminar el token de la base de datos
+        currentUserDetails().update("fcmToken", "");
         FirebaseAuth.getInstance().signOut();
     }
 

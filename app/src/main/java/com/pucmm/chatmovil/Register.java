@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.pucmm.chatmovil.models.UserModel;
 import com.pucmm.chatmovil.utils.FirebaseUtil;
 
@@ -94,7 +95,7 @@ private void setup() {
 
     private void saveUserToFirestore(String email, String name) {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    UserModel user = new UserModel(name, email, null, FirebaseUtil.currentUserId()); // Asumiendo que el URL de la foto de perfil es null por ahora
+    UserModel user = new UserModel(name, email, null, FirebaseUtil.currentUserId(), null); // Asumiendo que el URL de la foto de perfil es null por ahora
 
     db.collection("users2").document(FirebaseUtil.currentUserId()) // Cambiar la clave del documento al userId
             .set(user)

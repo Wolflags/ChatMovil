@@ -5,16 +5,26 @@ public class UserModel {
     private String email;
     private String profilePicUrl;
     private String userId;
+    private String fcmToken;
 
     public UserModel() {
         // Constructor vacío necesario para Firestore
     }
 
-    public UserModel(String username, String email, String profilePicUrl, String userId) {
+    public UserModel(String username, String email, String profilePicUrl, String userId, String fcmToken) {
         this.name = username;
         this.email = email;
         this.profilePicUrl = profilePicUrl;
         this.userId = userId;
+        this.fcmToken = fcmToken;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     public String getName() {

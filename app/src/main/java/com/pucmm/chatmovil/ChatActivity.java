@@ -1,12 +1,15 @@
 package com.pucmm.chatmovil;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -20,10 +23,15 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -32,14 +40,20 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.pucmm.chatmovil.adapter.ChatRecyclerAdapter;
-import com.pucmm.chatmovil.adapter.SearchUserRecyclerAdapter;
 import com.pucmm.chatmovil.models.ChatMessageModel;
 import com.pucmm.chatmovil.models.ChatModel;
 import com.pucmm.chatmovil.models.UserModel;
 import com.pucmm.chatmovil.utils.AndroidUtil;
 import com.pucmm.chatmovil.utils.FirebaseUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -143,19 +157,81 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     void sendMessageToUser(String message) {
+    chatModel.setLastMessageTime(Timestamp.now());
+    chatModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
+    chatModel.setLastMessage(message);
+    FirebaseUtil.getChatReference(chatId).set(chatModel);
 
-        chatModel.setLastMessageTime(Timestamp.now());
-        chatModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
-        chatModel.setLastMessage(message);
-        FirebaseUtil.getChatReference(chatId).set(chatModel);
+    ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(), Timestamp.now(), null);
+    FirebaseUtil.getChatMessageReference(chatId).add(chatMessageModel).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+        @Override
+        public void onComplete(@NonNull Task<DocumentReference> task) {
+            messageInput.setText("");
+            sendNotificationToUser(otherUser.getFcmToken(), "New Message", message);
+        }
+    });
+}
 
-        ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(), Timestamp.now(),null);
-        FirebaseUtil.getChatMessageReference(chatId).add(chatMessageModel).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentReference> task) {
-                messageInput.setText("");
-            }
-        });
+private void sendNotificationToUser(String token, String title, String body) {
+    new SendNotificationTask().execute(token, title, body);
+}
+
+private class SendNotificationTask extends AsyncTask<String, Void, Void> {
+    @Override
+    protected Void doInBackground(String... params) {
+        String token = params[0];
+        String title = params[1];
+        String body = params[2];
+
+        try {
+            Log.d(TAG, "TokenXDD: " + token);
+            String url = "https://fcm.googleapis.com/v1/projects/chatfirebase-47aa5/messages:send";
+            String serverKey = getAccessToken();
+
+            JSONObject json = new JSONObject();
+            JSONObject message = new JSONObject();
+            JSONObject notification = new JSONObject();
+            notification.put("title", title);
+            notification.put("body", body);
+            message.put("token", token);
+            message.put("notification", notification);
+            json.put("message", message);
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, json,
+                response -> Log.d(TAG, "Notification sent successfully"),
+                error -> Log.e(TAG, "Error sending notification", error)
+            ) {
+                @Override
+                public Map<String, String> getHeaders() {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("Authorization", "Bearer " + serverKey);
+                    headers.put("Content-Type", "application/json");
+                    return headers;
+                }
+            };
+
+            RequestQueue requestQueue = Volley.newRequestQueue(ChatActivity.this);
+            requestQueue.add(jsonObjectRequest);
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+}
+
+    public static String getAccessToken() throws IOException {
+        final String MESSAGING_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
+        final String[] SCOPES = { MESSAGING_SCOPE };
+
+        InputStream serviceAccountStream = ChatActivity.class
+                .getClassLoader().getResourceAsStream("service-account.json");
+        GoogleCredentials googleCredentials = GoogleCredentials
+                .fromStream(serviceAccountStream)
+                .createScoped(Arrays.asList(SCOPES));
+        googleCredentials.refreshIfExpired();
+
+        return googleCredentials.getAccessToken().getTokenValue();
     }
 
     private void getOrCreateChat() {
@@ -187,22 +263,27 @@ public class ChatActivity extends AppCompatActivity {
     );
 
     private void uploadImageAndSendMessage(Uri imageUri) {
-        StorageReference imageRef = FirebaseStorage.getInstance().getReference().child("chat_images").child(imageUri.getLastPathSegment());
-        imageRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-            imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                sendMessage(null, uri.toString());
-            });
+    StorageReference imageRef = FirebaseStorage.getInstance().getReference().child("chat_images").child(imageUri.getLastPathSegment());
+    imageRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
+        imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+            sendMessageWithImage(null, uri.toString());
         });
-    }
+    });
+}
 
-    private void sendMessage(String text, String imageUrl) {
-        String senderId = FirebaseUtil.currentUserId();
-        String senderName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-        Timestamp timestamp = Timestamp.now();
+private void sendMessageWithImage(String text, String imageUrl) {
+    String senderId = FirebaseUtil.currentUserId();
+    String senderName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+    Timestamp timestamp = Timestamp.now();
 
-        Message message = new Message(text, senderId, senderName, timestamp, imageUrl);
-        FirebaseUtil.getChatMessageReference(chatId).add(message);
-    }
+    ChatMessageModel message = new ChatMessageModel(text, senderId, timestamp, imageUrl);
+    FirebaseUtil.getChatMessageReference(chatId).add(message).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+        @Override
+        public void onComplete(@NonNull Task<DocumentReference> task) {
+            sendNotificationToUser(otherUser.getFcmToken(), "New Image", "You have received a new image.");
+        }
+    });
+}
 
 
 }

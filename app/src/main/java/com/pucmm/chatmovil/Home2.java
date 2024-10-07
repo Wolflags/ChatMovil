@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.pucmm.chatmovil.utils.FirebaseUtil;
 
 public class Home2 extends AppCompatActivity {
 
@@ -72,7 +73,7 @@ public class Home2 extends AppCompatActivity {
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
             if(task.isSuccessful()){
                 String token = task.getResult();
-                Log.i("My token", token);
+                FirebaseUtil.currentUserDetails().update("fcmToken", token);
             }
         });
     }
